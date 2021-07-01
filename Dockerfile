@@ -2,7 +2,7 @@ from ubuntu:18.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
-run apt-get update && apt-get install -y git make curl
+run apt-get update && apt-get install -y git make
 
 # rtems dependencies
 run apt-get install -y flex bison texinfo python-dev g++ unzip
@@ -12,35 +12,27 @@ run apt-get install -y qemu-system-i386
 
 
 # setup and compile RTEMS BSP
-run mkdir -p ${HOME}/rtems-4.11 \
+run mkdir -p ${HOME}/rtems-5 \
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems-source-builder.git \
+  && git clone -b 5 git://git.rtems.org/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
-# Download gnu mpc before source builder will fail to download it
-  && mkdir sources \
-  && curl https://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz --output sources/mpc-1.0.3.tar.gz \
-  && ../source-builder/sb-set-builder --prefix=$HOME/rtems-4.11 4.11/rtems-i386 \
+  && ../source-builder/sb-set-builder --prefix=$HOME/rtems-5 5/rtems-i386 \
 # clone and bootstrap RTEMS source tree
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems.git \
-  && export PATH=$HOME/rtems-4.11/bin:$PATH \
+  && git clone -b 5 git://git.rtems.org/rtems.git \
+  && export PATH=$HOME/rtems-5/bin:$PATH \
   && cd rtems && ./bootstrap \
 # Build and install RTEMS pc686 BSP
   && cd ${HOME} \
   && mkdir b-pc686 \
   && cd b-pc686 \
-  && ../rtems/configure --target=i386-rtems4.11 \
+  && ../rtems/configure --target=i386-rtems5 \
     --enable-rtemsbsp=pc686 \
-    --prefix=${HOME}/rtems-4.11 \
+    --prefix=${HOME}/rtems-5 \
     --enable-networking \
     --enable-cxx \
     --disable-posix \
     --disable-deprecated \
-    BSP_ENABLE_VGA=0 \
-    CLOCK_DRIVER_USE_TSC=1 \
-    USE_COM1_AS_CONSOLE=1 \
-    BSP_PRESS_KEY_FOR_RESET=0 \
-    BSP_RESET_BOARD_AT_EXIT=1 \ 
   && make \
   && make install
 
@@ -55,5 +47,5 @@ run cd ${HOME} \
   && rm -rf rtems-source-builder b-pc686 rtems
 
 # Remove unecessary dependencies now that rtems is built
-run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl
+run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo
 run apt-get autoremove -y
