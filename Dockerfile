@@ -49,3 +49,6 @@ run cd ${HOME} \
 # Remove unecessary dependencies now that rtems is built
 run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo
 run apt-get autoremove -y
+
+# Additional dependencies
+run apt-get install -y mtools
