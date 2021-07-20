@@ -59,4 +59,4 @@ run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gette
 run apt-get autoremove -y
 
 # Additional dependencies
-run apt-get install -y mtools parted dosfstools
+run apt-get install -y mtools parted dosfstools udev
