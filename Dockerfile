@@ -54,9 +54,14 @@ run cd git-* && make prefix=/usr/local && make prefix=/usr/local install
 run cd ${HOME} \
   && rm -rf rtems-source-builder b-pc686 rtems
 
+# Additional dependencies
+run apt-get install -y -f mtools parted udev bsdmainutils
+
+# Install dosfstools from source release
+run curl -o dosfstools.tar.gz http://deb.debian.org/debian/pool/main/d/dosfstools/dosfstools_4.2.orig.tar.gz
+run tar -zxf dosfstools.tar.gz && rm dosfstools.tar.gz
+run cd dosfstools-* && ./configure && make && make prefix=/usr/local install
+
 # Remove unecessary dependencies now that rtems is built
 run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl
 run apt-get autoremove -y
-
-# Additional dependencies
-run apt-get install -y mtools parted dosfstools udev
