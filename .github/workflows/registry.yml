@@ -3,12 +3,20 @@ name: Docker Build & Push Action
 on:
   push:
   pull_request:
-  
+
 jobs: 
-  name: Docker Build & Push Action
-  uses: mr-smithers-excellent/docker-build-push@v5
-  with:
-    image: qemu-5
-    registry: ghcr.io
-    username: ${{ secrets.GHCR_USERNAME }}
-    password: ${{ secrets.GHCR_TOKEN }} 
+  build-container:
+    # Continue if checks-for-duplicates found no duplicates. Always runs for
+    # pull-requests.
+    
+    name: cFE Documentation
+    runs-on: ubuntu-latest
+    
+    steps: 
+      - name: push to registry
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: qemu-5
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }} 
