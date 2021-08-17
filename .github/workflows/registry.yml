@@ -1,0 +1,14 @@
+name: Docker Build & Push Action
+
+on:
+  push:
+  pull_request:
+  
+jobs: 
+  name: Docker Build & Push Action
+  uses: mr-smithers-excellent/docker-build-push@v5
+  with:
+    image: qemu-5
+    registry: ghcr.io
+    username: ${{ secrets.GHCR_USERNAME }}
+    password: ${{ secrets.GHCR_TOKEN }} 
