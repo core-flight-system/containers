@@ -7,11 +7,9 @@ on:
         - main
 
 jobs: 
-  build-rtems-5:
-    # Continue if checks-for-duplicates found no duplicates. Always runs for
-    # pull-requests.
+  build-rtems-5:    
     
-    name: Build and Push Container
+    name: Build and Push qemu-rtems-5
     runs-on: ubuntu-latest
     
     steps:                     
@@ -27,11 +25,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-  build-rtems-4.11:
-      # Continue if checks-for-duplicates found no duplicates. Always runs for
-      # pull-requests.
+  build-rtems-4.11:      
       
-      name: Build and Push Container
+      name: Build and Push qemu-rtems-4-11
       runs-on: ubuntu-latest
       
       steps:                     
@@ -41,7 +37,7 @@ jobs:
         - name: Build and Push 
           uses: mr-smithers-excellent/docker-build-push@v5
           with:
-            image: qemu-rtems-4.11
+            image: qemu-rtems-4-11
             dockerfile: rtems-4.11/Dockerfile
             registry: ghcr.io
             username: ${{ github.actor }}
