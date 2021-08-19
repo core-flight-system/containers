@@ -11,7 +11,7 @@ jobs:
     # Continue if checks-for-duplicates found no duplicates. Always runs for
     # pull-requests.
     
-    name: cFE Documentation
+    name: Build and Push Container
     runs-on: ubuntu-latest
     
     steps:                     
