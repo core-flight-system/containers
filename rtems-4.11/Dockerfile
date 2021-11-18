@@ -2,7 +2,7 @@ from ubuntu:18.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
-run apt-get update && apt-get install -y git make
+run apt-get update && apt-get install -y git make curl
 
 # rtems dependencies
 run apt-get install -y flex bison texinfo python-dev g++ unzip
@@ -16,12 +16,18 @@ run mkdir -p ${HOME}/rtems-4.11 \
   && cd ${HOME} \
   && git clone -b 4.11 git://git.rtems.org/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
+  
+# Download gnu mpc before source builder will fail to download it
+  && mkdir sources \
+  && curl https://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz --output sources/mpc-1.0.3.tar.gz \
   && ../source-builder/sb-set-builder --prefix=$HOME/rtems-4.11 4.11/rtems-i386 \
+  
 # clone and bootstrap RTEMS source tree
   && cd ${HOME} \
   && git clone -b 4.11 git://git.rtems.org/rtems.git \
   && export PATH=$HOME/rtems-4.11/bin:$PATH \
   && cd rtems && ./bootstrap \
+  
 # Build and install RTEMS pc686 BSP
   && cd ${HOME} \
   && mkdir b-pc686 \
