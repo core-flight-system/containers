@@ -1,5 +1,4 @@
 from ubuntu:18.04
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
 run apt-get update && apt-get install -y git make curl
@@ -9,7 +8,6 @@ run apt-get install -y flex bison texinfo python-dev g++ unzip
 
 # QEMU dependencies
 run apt-get install -y qemu-system-i386
-
 
 # setup and compile RTEMS BSP
 run mkdir -p ${HOME}/rtems-4.11 \
