@@ -37,6 +37,11 @@ run mkdir -p ${HOME}/rtems-4.11 \
     --enable-cxx \
     --disable-posix \
     --disable-deprecated \
+    BSP_ENABLE_VGA=0 \
+    CLOCK_DRIVER_USE_TSC=1 \
+    USE_COM1_AS_CONSOLE=1 \
+    BSP_PRESS_KEY_FOR_RESET=0 \
+    BSP_RESET_BOARD_AT_EXIT=1 \
   && make \
   && make install
 
