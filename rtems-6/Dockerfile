@@ -16,10 +16,12 @@ copy rtems-6/config.ini /config.ini
 copy rtems-6/testbusy.c /testbusy.c
 
 # setup and compile RTEMS BSP
+# Git commits are from 13 May 2022
 run mkdir -p ${HOME}/rtems-6 \
   && cd ${HOME} \
   && git clone git://git.rtems.org/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
+  && git checkout 620b6243 \
   && ../source-builder/sb-set-builder --prefix=$HOME/rtems-6 6/rtems-i386 \
 # clone RTEMS source tree
   && cd ${HOME} \
@@ -27,6 +29,7 @@ run mkdir -p ${HOME}/rtems-6 \
   && export PATH=$HOME/rtems-6/bin:$PATH \
 # Build RTEMS BSP 
   && cd rtems \
+  && git checkout 3ccfb583 \
   && mv /config.ini . \
   && ./waf configure --prefix=${HOME}/rtems-6 \
   && ./waf \
@@ -35,6 +38,7 @@ run mkdir -p ${HOME}/rtems-6 \
   && cd ${HOME} \
   && git clone git://git.rtems.org/rtems-net-legacy.git \
   && cd rtems-net-legacy \
+  && git checkout 1d492241 \
   && git submodule update --init \
   && mv /testbusy.c libtest/testbusy.c \
   && ./waf configure --prefix=$HOME/rtems-6 \
