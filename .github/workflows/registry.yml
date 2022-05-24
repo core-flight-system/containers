@@ -7,6 +7,25 @@ on:
         - main
 
 jobs: 
+  build-rtems-6:    
+    
+    name: Build and Push qemu-rtems-6
+    runs-on: ubuntu-latest
+    
+    steps:                     
+      - name: Checkout code
+        uses: actions/checkout@v2        
+
+      - name: Build and Push 
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: qemu-rtems-6
+          dockerfile: rtems-6/Dockerfile
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tags: latest
+
   build-rtems-5:    
     
     name: Build and Push qemu-rtems-5
