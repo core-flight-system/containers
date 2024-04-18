@@ -1,10 +1,14 @@
-from ubuntu:18.04
+from ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
 run apt-get update && apt-get install -y git make
 
 # rtems dependencies
 run apt-get install -y flex bison texinfo python-dev g++ unzip
+
+# Added: Python development package installation for RTEMS build dependencies
+run apt-get install -y python3-dev libpython3-dev
 
 # QEMU dependencies
 run apt-get install -y qemu-system-i386
