@@ -13,7 +13,7 @@ run apt-get install -y qemu-system-i386
 # setup and compile RTEMS BSP
 run mkdir -p ${HOME}/rtems-4.11 \
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems-source-builder.git \
+  && git clone -b 4.11 https://gitlab.rtems.org/rtems/tools/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
   
 # Download gnu mpc before source builder will fail to download it
@@ -23,7 +23,7 @@ run mkdir -p ${HOME}/rtems-4.11 \
   
 # clone and bootstrap RTEMS source tree
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems.git \
+  && git clone -b 4.11 https://gitlab.rtems.org/rtems/rtos/rtems.git \
   && export PATH=$HOME/rtems-4.11/bin:$PATH \
   && cd rtems && ./bootstrap \
   

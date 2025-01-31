@@ -23,13 +23,13 @@ copy rtems-6/testbusy.c /testbusy.c
 # Git commits are from 13 May 2022
 run mkdir -p ${HOME}/rtems-6 \
   && cd ${HOME} \
-  && git clone git://git.rtems.org/rtems-source-builder.git \
+  && git clone https://gitlab.rtems.org/rtems/tools/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
   && git checkout 620b6243 \
   && ../source-builder/sb-set-builder --prefix=$HOME/rtems-6 6/rtems-i386 \
 # clone RTEMS source tree
   && cd ${HOME} \
-  && git clone git://git.rtems.org/rtems.git \
+  && git clone https://gitlab.rtems.org/rtems/rtos/rtems.git \
   && export PATH=$HOME/rtems-6/bin:$PATH \
 # Build RTEMS BSP 
   && cd rtems \
@@ -40,7 +40,7 @@ run mkdir -p ${HOME}/rtems-6 \
   && ./waf install \
 # Get and build the legacy network stack
   && cd ${HOME} \
-  && git clone git://git.rtems.org/rtems-net-legacy.git \
+  && git clone https://gitlab.rtems.org/rtems/pkg/rtems-net-legacy.git \
   && cd rtems-net-legacy \
   && git checkout 1d492241 \
   && git submodule update --init \
