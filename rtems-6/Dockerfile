@@ -14,10 +14,10 @@ run apt-get install -y python3-dev libpython3-dev
 run apt-get install -y qemu-system-i386
 
 # Copy config.ini file - Note that the environment variable HOME will not work here
-copy rtems-6/config.ini /config.ini
+copy config.ini /config.ini
 
 # Temporary fix for legacy network stack
-copy rtems-6/testbusy.c /testbusy.c
+copy testbusy.c /testbusy.c
 
 # setup and compile RTEMS BSP
 # Git commits are from 13 May 2022
