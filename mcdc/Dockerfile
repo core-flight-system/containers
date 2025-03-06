@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     cmake \
     lcov \
     python3 \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure dynamic linker to include /usr/local/lib (for GCC libraries)
