@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 run apt-get update && apt-get install -y git make curl
 
 # rtems dependencies
-run apt-get install -y flex bison texinfo python-dev g++ unzip
+run apt-get install -y flex bison texinfo python-dev g++ unzip libgmp-dev libmpfr-dev
 
 # QEMU dependencies
 run apt-get install -y qemu-system-i386
@@ -13,9 +13,8 @@ run apt-get install -y qemu-system-i386
 # setup and compile RTEMS BSP
 run mkdir -p ${HOME}/rtems-4.11 \
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems-source-builder.git \
+  && git clone -b 4.11 https://gitlab.rtems.org/rtems/tools/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
-  
 # Download gnu mpc before source builder will fail to download it
   && mkdir sources \
   && curl https://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz --output sources/mpc-1.0.3.tar.gz \
@@ -23,7 +22,7 @@ run mkdir -p ${HOME}/rtems-4.11 \
   
 # clone and bootstrap RTEMS source tree
   && cd ${HOME} \
-  && git clone -b 4.11 git://git.rtems.org/rtems.git \
+  && git clone -b 4.11 https://gitlab.rtems.org/rtems/rtos/rtems.git \
   && export PATH=$HOME/rtems-4.11/bin:$PATH \
   && cd rtems && ./bootstrap \
   
@@ -65,5 +64,6 @@ run tar -zxf dosfstools.tar.gz && rm dosfstools.tar.gz
 run cd dosfstools-* && ./configure && make && make prefix=/usr/local install
 
 # Remove unecessary dependencies now that rtems is built
-run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl
+run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
+  libgmp-dev libmpfr-dev
 run apt-get autoremove -y

@@ -5,7 +5,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 run apt-get update && apt-get install -y git make
 
 # rtems dependencies
-run apt-get install -y flex bison texinfo python-dev g++ unzip
+run apt-get install -y flex bison texinfo python3-dev g++ unzip libgmp-dev libmpfr-dev bzip2 xz-utils
+
+# Make python3 the default python
+run ln -s /usr/bin/python3 /usr/bin/python
 
 # QEMU dependencies
 run apt-get install -y qemu-system-i386
@@ -13,12 +16,12 @@ run apt-get install -y qemu-system-i386
 # setup and compile RTEMS BSP
 run mkdir -p ${HOME}/rtems-5 \
   && cd ${HOME} \
-  && git clone -b 5 git://git.rtems.org/rtems-source-builder.git \
+  && git clone -b 5 https://gitlab.rtems.org/rtems/tools/rtems-source-builder.git \
   && cd rtems-source-builder/rtems \
   && ../source-builder/sb-set-builder --prefix=$HOME/rtems-5 5/rtems-i386 \
 # clone and bootstrap RTEMS source tree
   && cd ${HOME} \
-  && git clone -b 5 git://git.rtems.org/rtems.git \
+  && git clone -b 5 https://gitlab.rtems.org/rtems/rtos/rtems.git \
   && export PATH=$HOME/rtems-5/bin:$PATH \
   && cd rtems && ./bootstrap \
 # Build and install RTEMS pc686 BSP
@@ -54,5 +57,6 @@ run tar -zxf dosfstools.tar.gz && rm dosfstools.tar.gz
 run cd dosfstools-* && ./configure && make && make prefix=/usr/local install
 
 # Remove unecessary dependencies now that rtems is built
-run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl
+run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
+  libgmp-dev libmpfr-dev bzip2 xz-utils
 run apt-get autoremove -y
