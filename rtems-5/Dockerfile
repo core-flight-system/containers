@@ -1,4 +1,4 @@
-from ubuntu:20.04
+from ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
@@ -57,6 +57,6 @@ run tar -zxf dosfstools.tar.gz && rm dosfstools.tar.gz
 run cd dosfstools-* && ./configure && make && make prefix=/usr/local install
 
 # Remove unecessary dependencies now that rtems is built
-run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
+run apt-get purge -y libz-dev libssl-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
   libgmp-dev libmpfr-dev bzip2 xz-utils
 run apt-get autoremove -y

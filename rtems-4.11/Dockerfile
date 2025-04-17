@@ -1,11 +1,14 @@
-from ubuntu:20.04
+from ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic dependencies
 run apt-get update && apt-get install -y git make curl
 
 # rtems dependencies
-run apt-get install -y flex bison texinfo python-dev g++ unzip libgmp-dev libmpfr-dev
+run apt-get install -y flex bison texinfo python2-dev g++ unzip libgmp-dev libmpfr-dev bzip2 xz-utils
+
+# Make python2 the default python
+run ln -s /usr/bin/python2 /usr/bin/python
 
 # QEMU dependencies
 run apt-get install -y qemu-system-i386
@@ -64,6 +67,6 @@ run tar -zxf dosfstools.tar.gz && rm dosfstools.tar.gz
 run cd dosfstools-* && ./configure && make && make prefix=/usr/local install
 
 # Remove unecessary dependencies now that rtems is built
-run apt-get purge -y libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
-  libgmp-dev libmpfr-dev
+run apt-get purge -y libz-dev libssl-dev libexpat1-dev gettext unzip git flex bison texinfo curl \
+  libgmp-dev libmpfr-dev bzip2 xz-utils
 run apt-get autoremove -y
