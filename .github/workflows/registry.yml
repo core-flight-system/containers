@@ -3,82 +3,46 @@ name: Docker Build & Push Action
 on:
   workflow_dispatch:
   push:
-      branches:
-        - main
+    branches:
+      - main
 
-jobs: 
-  build-rtems-6:    
-    
-    name: Build and Push qemu-rtems-6
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    
-    steps:                     
-      - name: Checkout code
-        uses: actions/checkout@v2        
 
-      - name: Build and Push 
-        uses: mr-smithers-excellent/docker-build-push@v5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify repo structure
+        run: |
+          echo "=== Repo root ==="
+          ls -la
+          echo "=== Dockerfile locations ==="
+          find . -name "Dockerfile" | sort
+          echo "=== docker-executor contents ==="
+          ls -la docker-executor/
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          image: qemu-rtems-6
-          dockerfile: rtems-6/Dockerfile
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          tags: latest
 
-  build-rtems-5:    
-    
-    name: Build and Push qemu-rtems-5
-    runs-on: ubuntu-latest
-    
-    steps:                     
-      - name: Checkout code
-        uses: actions/checkout@v2        
+      - name: Build All Images
+        run: |
+          make \
+            TGT_REPO=ghcr.io/${{ github.repository_owner }} \
+            REPO_TAG=latest \
+            LOCAL_TAG=ci \
+            all
 
-      - name: Build and Push 
-        uses: mr-smithers-excellent/docker-build-push@v5
-        with:
-          image: qemu-rtems-5
-          dockerfile: rtems-5/Dockerfile
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          tags: latest
-
-  build-rtems-4-11:      
-      
-      name: Build and Push qemu-rtems-4-11
-      runs-on: ubuntu-latest
-      
-      steps:                     
-        - name: Checkout code
-          uses: actions/checkout@v2        
-
-        - name: Build and Push 
-          uses: mr-smithers-excellent/docker-build-push@v5
-          with:
-            image: qemu-rtems-4-11
-            dockerfile: rtems-4.11/Dockerfile
-            registry: ghcr.io
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-            tags: latest
-
-  mcdc:    
-    
-    name: Build and Push mcdc
-    runs-on: ubuntu-latest
-    
-    steps:                     
-      - name: Checkout code
-        uses: actions/checkout@v2        
-
-      - name: Build and Push 
-        uses: mr-smithers-excellent/docker-build-push@v5
-        with:
-          image: mcdc
-          dockerfile: mcdc/Dockerfile
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          tags: latest
+      - name: Push All Images
+        run: |
+          make \
+            TGT_REPO=ghcr.io/${{ github.repository_owner }} \
+            REPO_TAG=latest \
+            LOCAL_TAG=ci \
+            push
