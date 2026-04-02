@@ -8,6 +8,8 @@ REPO_TAG ?= latest
 # The option --no-cache can be specified on command line if desired
 EXTRA_BUILDARGS += --progress=plain
 
+QUALIFIED_IMAGE_NAME = $(IMAGE_NAME):$(LOCAL_TAG)
+
 BASIC_IMAGE_SET += docker-executor
 BASIC_IMAGE_SET += cfsexec-qemu
 BASIC_IMAGE_SET += cfsexec-linux
@@ -40,7 +42,6 @@ ALL_BUILD_TARGETS      := $(addsuffix .build,$(ALL_IMAGE_SET))
 ALL_IMAGE_TARGETS      := $(addsuffix .image,$(ALL_IMAGE_SET))
 ALL_PUSH_TARGETS       := $(addsuffix .push,$(ALL_IMAGE_SET))
 ALL_PULL_TARGETS       := $(addsuffix .pull,$(ALL_IMAGE_SET))
-ALL_TRYPULL_TARGETS    := $(addsuffix .trypull,$(ALL_IMAGE_SET))
 
 $(ALL_BUILD_TARGETS) $(ALL_IMAGE_TARGETS) $(ALL_PUSH_TARGETS) $(ALL_PULL_TARGETS): IMAGE_NAME = $(basename $(@))
 
@@ -57,81 +58,81 @@ cfsbuildenv-gaisler-sparc-rcc.build: gaisler-sparc-rcc-sdk.image cfsbuildenv-lin
 
 
 %.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f $(subst rtems5-,rtems-,$(subst rtems6-,rtems-,$(IMAGE_NAME)))/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f $(subst rtems5-,rtems-,$(subst rtems6-,rtems-,$(IMAGE_NAME)))/Dockerfile .
 
 # RTEMS 5 Tools
 rtems5-tools.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg RTEMS_VER=5 \
 		-f rtems-tools/Dockerfile .
 
 # RTEMS 6 Tools
 rtems6-tools.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg RTEMS_VER=6 \
 		-f rtems-tools/Dockerfile .
 
 # RTEMS 5 RTOS
 rtems5-rtos.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg TOOLS_IMAGE=rtems5-tools:$(LOCAL_TAG) \
 		--build-arg RTEMS_VER=5 \
 		-f rtems-rtos/Dockerfile .
 
 # RTEMS 6 RTOS
 rtems6-rtos.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg TOOLS_IMAGE=rtems6-tools:$(LOCAL_TAG) \
 		--build-arg RTEMS_VER=6 \
 		-f rtems-rtos/Dockerfile .
 
 # cFS Build Environment - RTEMS 5
 cfsbuildenv-rtems5.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg RTEMS_RTOS_IMAGE=rtems5-rtos:$(LOCAL_TAG) \
 		-f cfsbuildenv-rtems/Dockerfile .
 
 # cFS Build Environment - RTEMS 6
 cfsbuildenv-rtems6.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg RTEMS_RTOS_IMAGE=rtems6-rtos:$(LOCAL_TAG) \
 		-f cfsbuildenv-rtems/Dockerfile .
 
 cfsbuildenv-doxygen.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f cfsbuildenv-doxygen/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-doxygen/Dockerfile .
 
 cfsbuildenv-mcdc.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f cfsbuildenv-mcdc/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-mcdc/Dockerfile .
 
 cfsbuildenv-linux.build cfsbuildenv-ubuntu22.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f cfsbuildenv-dpkg/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-dpkg/Dockerfile .
 
 cfsbuildenv-el8.build cfsbuildenv-el9.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f cfsbuildenv-rpm/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-rpm/Dockerfile .
 
 cfsbuildenv-yocto.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg YOCTO_SDK_IMAGE=yocto-sdk:$(LOCAL_TAG) \
 		-f cfsbuildenv-yocto/Dockerfile .
 
 cfsbuildenv-arm-linux.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=cfsbuildenv-linux:$(LOCAL_TAG) \
 		--build-arg SDK_IMAGE=arm-linux-sdk:$(LOCAL_TAG) \
 		-f cfsbuildenv-arm-linux/Dockerfile .
 
 cfsbuildenv-gaisler-sparc-rcc.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) \
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=cfsbuildenv-linux:$(LOCAL_TAG) \
 		--build-arg SDK_IMAGE=gaisler-sparc-rcc-sdk:$(LOCAL_TAG) \
 		-f cfsbuildenv-gaisler-sparc-rcc/Dockerfile .
 
 cfsexec-linux.build cfsexec-ubuntu22.build:
-	docker build $(EXTRA_BUILDARGS) -t $(IMAGE_NAME):$(LOCAL_TAG) -f cfsexec-dpkg/Dockerfile .
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsexec-dpkg/Dockerfile .
 
 %.push:
-	docker tag $(IMAGE_NAME):$(LOCAL_TAG) $(TGT_REPO)/$(IMAGE_NAME):$(LOCAL_TAG)
-	docker push $(TGT_REPO)/$(IMAGE_NAME):$(LOCAL_TAG)
+	docker tag $(QUALIFIED_IMAGE_NAME) $(TGT_REPO)/$(QUALIFIED_IMAGE_NAME)
+	docker push $(TGT_REPO)/$(QUALIFIED_IMAGE_NAME)
 
 %.pull:
 	docker pull $(TGT_REPO)/$(IMAGE_NAME):$(REPO_TAG)
@@ -139,7 +140,7 @@ cfsexec-linux.build cfsexec-ubuntu22.build:
 # the idea here is to check if the image was already built, and if so, just
 # use the already-built image from the container repo.  This is done by commit hash.
 %.image:
-	docker pull $(TGT_REPO)/$(IMAGE_NAME):$(LOCAL_TAG) || $(MAKE) $(IMAGE_NAME).build
+	docker pull $(TGT_REPO)/$(QUALIFIED_IMAGE_NAME) || $(MAKE) $(IMAGE_NAME).build
 
 # The following is a list of images that rely on a base
 # image that uses the Debian-style package management via
