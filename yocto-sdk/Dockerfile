@@ -2,10 +2,13 @@
 # Build the Yocto SDK image - contains QEMU riscv64 and mips toolchains
 #########################################################
 
-ARG BASE_IMAGE=debian:trixie
-FROM ${BASE_IMAGE} AS yocto-sdk-installer
+ARG BASE_IMAGE=cfsbuildenv-linux:test
+FROM ${BASE_IMAGE} AS yocto-sdk-builder
 
+ARG YOCTO_BRANCH=scarthgap
 
+RUN git clone git://git.openembedded.org/meta-openembedded -b ${YOCTO_BRANCH} --depth 1
+RUN git clone git://git.yoctoproject.org/poky -b ${YOCTO_BRANCH} --depth 1
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         python3-minimal python3-venv python3-pip file \
         ${EXTRA_PKGS} && \
