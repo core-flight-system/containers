@@ -1,0 +1,29 @@
+### Shell environment set up for builds. ###
+
+You can now run '[MACHINE=<machine>] bitbake <target>'
+
+The default machine is a virtualized RISC-V target that
+can be launched using QEMU.  If targeting real hardware,
+obtain a Yocto BSP from the hardware vendor and add it to
+the layers using:
+    bitbake-layers add-layer <path-to-vendor-bsp>
+
+After adding a BSP the MACHINE specification may be
+changed accordingly by editing conf/local.conf
+
+Example targets for CFE/CFS:
+    core-image-cfecfs
+    core-image-cfecfs-rt
+
+Other standard Yocto targets are:
+    core-image-minimal
+    core-image-minimal-dev
+    core-image-minimal-mtdutils
+
+To build a resuable SDK to compile CFS externally:
+    bitbake -c populate_sdk core-image-cfecfs
+
+Other commonly useful commands are:
+ - 'devtool' and 'recipetool' handle common recipe tasks
+ - 'bitbake-layers' handles common layer tasks
+ - 'oe-pkgdata-util' handles common target package tasks
