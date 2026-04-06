@@ -14,7 +14,7 @@ BASIC_IMAGE_SET += docker-executor
 BASIC_IMAGE_SET += cfsexec-qemu
 BASIC_IMAGE_SET += cfsexec-linux
 BASIC_IMAGE_SET += cfsexec-ubuntu22
-# BASIC_IMAGE_SET += yocto-sdk
+BASIC_IMAGE_SET += yocto-sdk
 BASIC_IMAGE_SET += gaisler-sparc-rcc-sdk
 BASIC_IMAGE_SET += arm-linux-sdk
 ALL_IMAGE_SET += $(BASIC_IMAGE_SET)
@@ -49,12 +49,13 @@ all: $(ALL_IMAGE_TARGETS)
 push: $(ALL_PUSH_TARGETS)
 pull: $(ALL_PULL_TARGETS)
 
-rtems5-rtos.build: rtems5-tools.image
-rtems6-rtos.build: rtems6-tools.image
-cfsbuildenv-rtems5.build: rtems5-rtos.image
-cfsbuildenv-rtems6.build: rtems6-rtos.image
-cfsbuildenv-arm-linux.build: arm-linux-sdk.image cfsbuildenv-linux.image
-cfsbuildenv-gaisler-sparc-rcc.build: gaisler-sparc-rcc-sdk.image cfsbuildenv-linux.image
+rtems5-rtos.image: rtems5-tools.image
+rtems6-rtos.image: rtems6-tools.image
+cfsbuildenv-rtems5.image: rtems5-rtos.image
+cfsbuildenv-rtems6.image: rtems6-rtos.image
+cfsbuildenv-arm-linux.image: arm-linux-sdk.image cfsbuildenv-linux.image
+cfsbuildenv-gaisler-sparc-rcc.image: gaisler-sparc-rcc-sdk.image cfsbuildenv-linux.image
+yocto-sdk.image: cfsbuildenv-linux.image
 
 
 %.build:
@@ -109,6 +110,11 @@ cfsbuildenv-linux.build cfsbuildenv-ubuntu22.build:
 
 cfsbuildenv-el8.build cfsbuildenv-el9.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-rpm/Dockerfile .
+
+yocto-sdk.build:
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
+		--build-arg BASE_IMAGE=cfsbuildenv-linux:$(LOCAL_TAG) \
+		-f yocto-sdk/Dockerfile .
 
 cfsbuildenv-yocto.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
