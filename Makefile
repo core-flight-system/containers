@@ -14,7 +14,6 @@ BASIC_IMAGE_SET += docker-executor
 BASIC_IMAGE_SET += cfsexec-qemu
 BASIC_IMAGE_SET += cfsexec-linux
 BASIC_IMAGE_SET += cfsexec-ubuntu22
-BASIC_IMAGE_SET += yocto-sdk
 BASIC_IMAGE_SET += gaisler-sparc-rcc-sdk
 BASIC_IMAGE_SET += arm-linux-sdk
 ALL_IMAGE_SET += $(BASIC_IMAGE_SET)
@@ -33,6 +32,13 @@ BUILDENV_IMAGE_SET += cfsbuildenv-el8
 ALL_IMAGE_SET += $(BUILDENV_IMAGE_SET)
 
 # The rest of the images each need a custom rule with custom deps
+ALL_IMAGE_SET += yocto-sources
+ALL_IMAGE_SET += yocto-compile-qemuriscv64
+ALL_IMAGE_SET += yocto-image-qemuriscv64
+ALL_IMAGE_SET += yocto-sdk-qemuriscv64
+ALL_IMAGE_SET += yocto-compile-qemumips
+ALL_IMAGE_SET += yocto-image-qemumips
+ALL_IMAGE_SET += yocto-sdk-qemumips
 ALL_IMAGE_SET += rtems5-tools
 ALL_IMAGE_SET += rtems6-tools
 ALL_IMAGE_SET += rtems5-rtos
@@ -111,9 +117,31 @@ cfsbuildenv-linux.build cfsbuildenv-ubuntu22.build:
 cfsbuildenv-el8.build cfsbuildenv-el9.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) -f cfsbuildenv-rpm/Dockerfile .
 
-yocto-sdk.build:
+yocto-sources.build: cfsbuildenv-linux.image
+yocto-sources.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=cfsbuildenv-linux:$(LOCAL_TAG) \
+		-f yocto-sources/Dockerfile .
+
+yocto-compile-%.build: yocto-sources.image
+yocto-compile-%.build:
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
+		--build-arg BASE_IMAGE=yocto-sources-$(*):$(LOCAL_TAG) \
+		--build-arg MACHINE=$($*) \
+		-f yocto-compile/Dockerfile .
+
+yocto-image-%.build: yocto-compile-%.image
+yocto-image-%.build:
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
+		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
+		--build-arg MACHINE=$($*) \
+		-f yocto-image/Dockerfile .
+
+yocto-sdk-%.build: yocto-compile-%.image
+yocto-sdk-%.build:
+	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
+		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
+		--build-arg MACHINE=$($*) \
 		-f yocto-sdk/Dockerfile .
 
 cfsbuildenv-yocto.build:
