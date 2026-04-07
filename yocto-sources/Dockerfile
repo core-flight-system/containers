@@ -7,7 +7,7 @@ FROM ${BASE_IMAGE} AS yocto-sources
 
 ARG YOCTO_BRANCH=scarthgap
 
-COPY yocto-sdk/meta-cfecfs meta-cfecfs
+COPY yocto-sources/meta-cfecfs meta-cfecfs
 RUN git clone git://git.openembedded.org/meta-openembedded -b ${YOCTO_BRANCH} --depth 1
 RUN git clone git://git.yoctoproject.org/poky -b ${YOCTO_BRANCH} --depth 1
 RUN sudo apt-get update && \
@@ -25,6 +25,6 @@ ENV PATH=${OE_ADDED_PATHS}${PATH}
 ENV BBPATH=${BUILDDIR}
 
 RUN mkdir -p ${BUILDDIR}
-COPY yocto-sdk/conf ${BUILDDIR}/conf
+COPY yocto-sources/conf ${BUILDDIR}/conf
 RUN ls -lR ${BUILDDIR} && cat ${BUILDDIR}/conf/bblayers.conf
 RUN bitbake core-image-cfecfs --runall=fetch
