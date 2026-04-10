@@ -8,8 +8,8 @@ FROM ${BASE_IMAGE} AS yocto-sources
 ARG YOCTO_BRANCH=scarthgap
 
 COPY yocto-sources/meta-cfecfs meta-cfecfs
-RUN git clone git://git.openembedded.org/meta-openembedded -b ${YOCTO_BRANCH} --depth 1
-RUN git clone git://git.yoctoproject.org/poky -b ${YOCTO_BRANCH} --depth 1
+RUN git clone https://git.openembedded.org/meta-openembedded -b ${YOCTO_BRANCH} --depth 1
+RUN git clone https://git.yoctoproject.org/poky -b ${YOCTO_BRANCH} --depth 1
 RUN sudo apt-get update && \
     sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
         locales chrpath cpio diffstat lz4 zstd wget 

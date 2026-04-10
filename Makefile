@@ -5,6 +5,20 @@ LOCAL_TAG ?= $(shell git rev-parse --short HEAD)
 TGT_REPO ?= ghcr.io/core-flight-system/containers
 REPO_TAG ?= latest
 
+# If AUTOBUILD_DEPS is set, then recursively build any missing images
+# that are dependencies of the target image.  If this is not set,
+# then the build will fail if the dependency does not exist.  This
+# must always be true at the top level or else nothing will build.
+ifeq ($(MAKELEVEL),0)
+AUTOBUILD_DEPS ?= 1
+endif
+
+ifneq ($(AUTOBUILD_DEPS),)
+BUILD_DEP_CMD = $(MAKE) $(IMAGE_NAME).build
+else
+BUILD_DEP_CMD = /bin/false
+endif
+
 # The option --no-cache can be specified on command line if desired
 EXTRA_BUILDARGS += --progress=plain
 
@@ -54,6 +68,9 @@ $(ALL_BUILD_TARGETS) $(ALL_IMAGE_TARGETS) $(ALL_PUSH_TARGETS) $(ALL_PULL_TARGETS
 all: $(ALL_IMAGE_TARGETS)
 push: $(ALL_PUSH_TARGETS)
 pull: $(ALL_PULL_TARGETS)
+
+check:
+	env
 
 rtems5-rtos.image: rtems5-tools.image
 rtems6-rtos.image: rtems6-tools.image
@@ -126,22 +143,22 @@ yocto-sources.build:
 yocto-compile-%.build: yocto-sources.image
 yocto-compile-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
-		--build-arg BASE_IMAGE=yocto-sources-$(*):$(LOCAL_TAG) \
-		--build-arg MACHINE=$($*) \
+		--build-arg BASE_IMAGE=yocto-sources:$(LOCAL_TAG) \
+		--build-arg MACHINE=$(*) \
 		-f yocto-compile/Dockerfile .
 
 yocto-image-%.build: yocto-compile-%.image
 yocto-image-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
-		--build-arg MACHINE=$($*) \
+		--build-arg MACHINE=$(*) \
 		-f yocto-image/Dockerfile .
 
 yocto-sdk-%.build: yocto-compile-%.image
 yocto-sdk-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
-		--build-arg MACHINE=$($*) \
+		--build-arg MACHINE=$(*) \
 		-f yocto-sdk/Dockerfile .
 
 cfsbuildenv-yocto.build:
@@ -174,29 +191,30 @@ cfsexec-linux.build cfsexec-ubuntu22.build:
 # the idea here is to check if the image was already built, and if so, just
 # use the already-built image from the container repo.  This is done by commit hash.
 %.image:
-	docker pull $(TGT_REPO)/$(QUALIFIED_IMAGE_NAME) || $(MAKE) $(IMAGE_NAME).build
+	docker pull $(TGT_REPO)/$(QUALIFIED_IMAGE_NAME) || /bin/true
+	docker inspect $(QUALIFIED_IMAGE_NAME) > /dev/null || $(BUILD_DEP_CMD)
 
 # The following is a list of images that rely on a base
 # image that uses the Debian-style package management via
-# apt and dpkg, e.g. Debian/Ubuntu or any derivative thereof.  
-DPKG_BUILD_TARGETS += arm-linux-sdk.build 
-DPKG_BUILD_TARGETS += cfsbuildenv-doxygen.build 
-DPKG_BUILD_TARGETS += docker-executor.build 
-DPKG_BUILD_TARGETS += gaisler-sparc-rcc-sdk.build 
-DPKG_BUILD_TARGETS += rtems5-rtos.build 
+# apt and dpkg, e.g. Debian/Ubuntu or any derivative thereof.
+DPKG_BUILD_TARGETS += arm-linux-sdk.build
+DPKG_BUILD_TARGETS += cfsbuildenv-doxygen.build
+DPKG_BUILD_TARGETS += docker-executor.build
+DPKG_BUILD_TARGETS += gaisler-sparc-rcc-sdk.build
+DPKG_BUILD_TARGETS += rtems5-rtos.build
 DPKG_BUILD_TARGETS += rtems5-tools.build
-DPKG_BUILD_TARGETS += rtems6-rtos.build 
+DPKG_BUILD_TARGETS += rtems6-rtos.build
 DPKG_BUILD_TARGETS += rtems6-tools.build
-DPKG_BUILD_TARGETS += cfsbuildenv-rtems5.build 
-DPKG_BUILD_TARGETS += cfsbuildenv-rtems6.build 
-DPKG_BUILD_TARGETS += cfsbuildenv-linux.build 
+DPKG_BUILD_TARGETS += cfsbuildenv-rtems5.build
+DPKG_BUILD_TARGETS += cfsbuildenv-rtems6.build
+DPKG_BUILD_TARGETS += cfsbuildenv-linux.build
 DPKG_BUILD_TARGETS += cfsexec-linux.build
 
 $(DPKG_BUILD_TARGETS): EXTRA_BUILDARGS += --build-arg BASE_IMAGE=debian:bookworm
 
 # These images use rocky linux as an stand-in for RHEL
 # They should work on any RHEL-like distro that uses rpm/dnf package management
-%-el8.build: EXTRA_BUILDARGS += --build-arg BASE_IMAGE=rockylinux:8 
+%-el8.build: EXTRA_BUILDARGS += --build-arg BASE_IMAGE=rockylinux:8
 %-el9.build: EXTRA_BUILDARGS += --build-arg BASE_IMAGE=rockylinux:9
 
 # These images are intentially using the older ubuntu baseline
