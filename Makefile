@@ -140,21 +140,24 @@ yocto-sources.build:
 		--build-arg BASE_IMAGE=cfsbuildenv-linux:$(LOCAL_TAG) \
 		-f yocto-sources/Dockerfile .
 
-yocto-compile-%.build: yocto-sources.image
+yocto-compile-qemuriscv64.build: yocto-sources.image
+yocto-compile-qemumips.build: yocto-sources.image
 yocto-compile-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=yocto-sources:$(LOCAL_TAG) \
 		--build-arg MACHINE=$(*) \
 		-f yocto-compile/Dockerfile .
 
-yocto-image-%.build: yocto-compile-%.image
+yocto-image-qemuriscv64.build: yocto-compile-qemuriscv64.image
+yocto-image-qemumips.build: yocto-compile-qemumips.image
 yocto-image-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
 		--build-arg MACHINE=$(*) \
 		-f yocto-image/Dockerfile .
 
-yocto-sdk-%.build: yocto-compile-%.image
+yocto-sdk-qemuriscv64.build: yocto-compile-qemuriscv64.image
+yocto-sdk-qemumips.build: yocto-compile-qemumips.image
 yocto-sdk-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_IMAGE_NAME) \
 		--build-arg BASE_IMAGE=yocto-compile-$(*):$(LOCAL_TAG) \
