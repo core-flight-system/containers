@@ -13,8 +13,8 @@ ARG EXTRA_PKGS=""
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         sudo ca-certificates curl lsb-release software-properties-common \
-        build-essential gcc g++ gawk cmake lcov xsltproc rsync jq \
+        build-essential git gcc g++ gawk cmake lcov xsltproc rsync jq file \
         python3 python3-venv python3-dev python3-pip openssh-client \
-        libexpat-dev liblua5.3-dev libjson-c-dev xz-utils cppcheck clang-format-19 wget git \
+        libexpat-dev liblua5.3-dev libjson-c-dev xz-utils cppcheck clang-format wget \
         ${EXTRA_PKGS} && \
     rm -rf /var/cache/apt

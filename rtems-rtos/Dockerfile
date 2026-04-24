@@ -20,12 +20,6 @@ RUN apt-get update && env DEBIAN_FRONTEND=noninteractive apt-get install -y curl
 # Copy the RTEMS tools from the /opt
 COPY --from=rtems-tools /opt /opt
 
-# Create a non-root user to do the RTOS build
-RUN useradd -m -c "Docker user" -U -G sudo docker && \
-    echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers
-
-USER docker
-WORKDIR /home/docker
 ENV PATH=/opt/rtems/bin:$PATH
 
 # Clone RTEMS source
@@ -44,7 +38,7 @@ RUN . /opt/rtems/rtems-tools-info && \
         python3 ./waf configure \
             --prefix=/opt/rtems-${RTEMS_VER} && \
         python3 ./waf build && \
-        sudo python3 ./waf install; \
+        python3 ./waf install; \
     else \
         echo "Building RTEMS 5 with autotools..."; \
         ./bootstrap && \
@@ -59,5 +53,5 @@ RUN . /opt/rtems/rtems-tools-info && \
             --disable-posix \
             --disable-deprecated && \
         make && \
-        sudo make install; \
+        make install; \
     fi
