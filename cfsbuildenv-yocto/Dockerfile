@@ -22,3 +22,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Bring the SDK entirely from the yocto-sdk image,
 COPY --from=yocto-sdk /opt /opt
+
+# Create a non-root user to do the build, but grant sudo to permit adding dependencies if needed
+RUN useradd -m -c "Docker user" -U -G sudo docker && \
+    echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers
+
+USER docker
+WORKDIR /home/docker

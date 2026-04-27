@@ -15,12 +15,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         ca-certificates curl lsb-release software-properties-common jq \
         build-essential gawk cmake lcov python3 python3-venv python3-dev \
         python3-pip parted dosfstools mtools bsdextrautils \
-        qemu-utils qemu-system-x86 \
+        qemu-utils qemu-system-x86 git \
         ${EXTRA_PKGS} && \
     rm -rf /var/cache/apt
-
-# This just creates a normal user without sudo privileges
-RUN useradd -m -c "Docker user" -U docker
 
 # Bring the RTEMS tree entirely from the rtems-rtos image,
 COPY --chown=docker:docker --from=rtems-rtos /opt /opt

@@ -15,7 +15,7 @@ ARG EXTRA_PKGS=""
 RUN export KEYFILE=$(. /etc/os-release && echo "RPM-GPG-KEY-EPEL-${VERSION_ID%%.*}") && \
     rpmkeys --import https://dl.fedoraproject.org/pub/epel/${KEYFILE}
 
-# Note that there are no strict dependencies on EPEL packages, but
+# Note that there are no strict dependencies on EPEL packages, but 
 # historically it also offered a newer version of CMake where the version in RHEL was obsolete.
 RUN export EL_VERSION=$(. /etc/os-release && echo "${VERSION_ID%%.*}") && \
     dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EL_VERSION}.noarch.rpm && \
