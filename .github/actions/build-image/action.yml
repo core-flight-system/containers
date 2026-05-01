@@ -1,0 +1,41 @@
+name: 'Build and Push docker image'
+description: 'Builds the docker image and pushes it to the container repo'
+
+inputs:
+  target-image:
+    description: Image Target name
+    type: string
+    required: true
+  registry-token:
+    description: Token for logging into container registry
+    type: string
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.registry-token }}
+
+    # This step is intended to improve build speeds -- if the image is not changed
+    # from latest then docker may figure this out and not rebuild it
+    - name: Pull from Latest
+      shell: bash
+      run: make REPO_TAG=latest ${{ inputs.target-image }}.pull || /bin/true
+
+    - name: Build Image
+      shell: bash
+      run: make ${{ inputs.target-image }}.image
+
+    - name: Push Image
+      shell: bash
+      run: make ${{ inputs.target-image }}.push
+
+    - name: Push as Latest
+      if: github.ref == github.event.repository.default_branch
+      shell: bash
+      run: make REPO_TAG=latest ${{ inputs.target-image }}.push

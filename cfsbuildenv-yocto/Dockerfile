@@ -3,10 +3,12 @@
 # for an embedded Linux target using Yocto
 #########################################################
 
-ARG YOCTO_SDK_IMAGE=yocto-sdk
+ARG YOCTO_SDK_IMAGE_RISCV=yocto-sdk-qemuriscv64
+ARG YOCTO_SDK_IMAGE_MIPS=yocto-sdk-qemumips
 ARG BASE_IMAGE=debian:trixie
 
-FROM ${YOCTO_SDK_IMAGE} AS yocto-sdk
+FROM ${YOCTO_SDK_IMAGE_RISCV} AS yocto-sdk-riscv64
+FROM ${YOCTO_SDK_IMAGE_MIPS} AS yocto-sdk-mips
 FROM ${BASE_IMAGE} AS cfsbuildenv-yocto
 
 ARG EXTRA_PKGS=""
@@ -20,12 +22,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         ${EXTRA_PKGS} && \
     rm -rf /var/cache/apt
 
+RUN mkdir -p /opt 
+
 # Bring the SDK entirely from the yocto-sdk image,
-COPY --from=yocto-sdk /opt /opt
+COPY --from=yocto-sdk-riscv64 /opt /opt
+COPY --from=yocto-sdk-mips /opt /opt
 
-# Create a non-root user to do the build, but grant sudo to permit adding dependencies if needed
-RUN useradd -m -c "Docker user" -U -G sudo docker && \
-    echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers
+RUN for ver in /opt/poky/*; do ln -sv $(basename $ver) ${ver%.*}; done
 
-USER docker
-WORKDIR /home/docker
