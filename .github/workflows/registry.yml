@@ -6,52 +6,59 @@ on:
     branches:
       - main
 
+env:
+  TGT_REPO: ghcr.io/${{ github.repository_owner }}
+
 jobs:
-  build-and-push:
-    name: Build and Push Docker Images
+  build-sdk:
+    name: Build SDK Images
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-image: [ arm-linux-sdk, gaisler-sparc-rcc-sdk, rtems5-tools, rtems6-tools ]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Verify repo structure
-        run: |
-          echo "=== Repo root ==="
-          ls -la
-          echo "=== Dockerfile locations ==="
-          find . -name "Dockerfile" | sort
-          echo "=== docker-executor contents ==="
-          ls -la docker-executor/
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+      - name: Build and push image
+        uses: ./.github/actions/build-image
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          target-image: ${{ matrix.target-image }}
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine Docker Tag
-        id: determine_tag
-        run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "DOCKER_TAG=latest" >> $GITHUB_ENV
-            echo "Building with tag: latest (Main branch)"
-          else
-            echo "DOCKER_TAG=ci" >> $GITHUB_ENV
-            echo "Building with tag: ci (Non-main branch/PR)"
-          fi
+  build-basic:
+    name: Build System/OS Images
+    needs: build-sdk
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-image: [ cfsexec-qemu, cfsexec-linux, cfsexec-ubuntu22, rtems5-rtos, rtems6-rtos ]
 
-      - name: Build All Images
-        run: |
-          make \
-            TGT_REPO=ghcr.io/${{ github.repository_owner }} \
-            LOCAL_TAG=${{ env.DOCKER_TAG }} \
-            all
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-      - name: Push All Images
-        run: |
-          make \
-            TGT_REPO=ghcr.io/${{ github.repository_owner }} \
-            LOCAL_TAG=${{ env.DOCKER_TAG }} \
-            push
+      - name: Build and push image
+        uses: ./.github/actions/build-image
+        with:
+          target-image: ${{ matrix.target-image }}
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-buildenv:
+    name: CFS Build Environment Images
+    needs: build-basic
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-image: [ cfsbuildenv-doxygen, cfsbuildenv-linux, cfsbuildenv-mcdc, cfsbuildenv-rtems5, cfsbuildenv-rtems6, cfsbuildenv-arm-linux, cfsbuildenv-ubuntu22, cfsbuildenv-el9, cfsbuildenv-el8, cfsbuildenv-gaisler-sparc-rcc, cfsbuildenv-yocto ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Build and push image
+        uses: ./.github/actions/build-image
+        with:
+          target-image: ${{ matrix.target-image }}
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
