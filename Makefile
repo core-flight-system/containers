@@ -1,11 +1,11 @@
 # Example makefile for building all the images locally
 # This is useful when debugging, so as to not REQUIRE the use of CI/CD to build
 
-LOCAL_TAG ?= $(shell git rev-parse --short HEAD)
-TGT_REPO ?= ghcr.io/core-flight-system
-REPO_TAG ?= $(LOCAL_TAG)
+export LOCAL_TAG ?= $(shell git rev-parse --short HEAD)
+export TGT_REPO  ?= ghcr.io/core-flight-system
+export REPO_TAG  ?= $(LOCAL_TAG)
 
-PULL_DEP_CMD = docker inspect  --format '{{.Id}}' $(QUALIFIED_LOCAL_NAME)
+PULL_DEP_CMD = docker inspect  --format '{{.Id}}' $(QUALIFIED_REPO_NAME)
 MAKE_DEP_CMD = $(MAKE) $(IMAGE_NAME).build
 
 # If AUTOBUILD_DEPS is set, then recursively build any missing images
@@ -14,7 +14,7 @@ MAKE_DEP_CMD = $(MAKE) $(IMAGE_NAME).build
 # must always be true at the top level or else nothing will build.
 ifeq ($(MAKELEVEL),0)
 # On the first level make we must build it if it is part of MAKECMDGOALS, never fetch it
-BUILD_DEP_CMD = if [ "x$(findstring $(@),$(MAKECMDGOALS))" = "x" ]; then $(PULL_DEP_CMD); else $(MAKE_DEP_CMD); fi 
+BUILD_DEP_CMD = if [ -z "$(findstring $(@),$(MAKECMDGOALS))" ]; then $(PULL_DEP_CMD); else $(MAKE_DEP_CMD); fi
 else ifneq ($(AUTOBUILD_DEPS),)
 # On other levels, fetch if exists, otherwise build it
 BUILD_DEP_CMD = $(PULL_DEP_CMD) || $(MAKE_DEP_CMD)
@@ -117,27 +117,27 @@ rtems6-tools.build:
 # RTEMS 5 RTOS
 rtems5-rtos.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg TOOLS_IMAGE=$(TGT_REPO)/rtems5-tools:$(LOCAL_TAG) \
+		--build-arg TOOLS_IMAGE=$(TGT_REPO)/rtems5-tools:$(REPO_TAG) \
 		--build-arg RTEMS_VER=5 \
 		-f rtems-rtos/Dockerfile .
 
 # RTEMS 6 RTOS
 rtems6-rtos.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg TOOLS_IMAGE=$(TGT_REPO)/rtems6-tools:$(LOCAL_TAG) \
+		--build-arg TOOLS_IMAGE=$(TGT_REPO)/rtems6-tools:$(REPO_TAG) \
 		--build-arg RTEMS_VER=6 \
 		-f rtems-rtos/Dockerfile .
 
 # cFS Build Environment - RTEMS 5
 cfsbuildenv-rtems5.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg RTEMS_RTOS_IMAGE=$(TGT_REPO)/rtems5-rtos:$(LOCAL_TAG) \
+		--build-arg RTEMS_RTOS_IMAGE=$(TGT_REPO)/rtems5-rtos:$(REPO_TAG) \
 		-f cfsbuildenv-rtems/Dockerfile .
 
 # cFS Build Environment - RTEMS 6
 cfsbuildenv-rtems6.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg RTEMS_RTOS_IMAGE=$(TGT_REPO)/rtems6-rtos:$(LOCAL_TAG) \
+		--build-arg RTEMS_RTOS_IMAGE=$(TGT_REPO)/rtems6-rtos:$(REPO_TAG) \
 		-f cfsbuildenv-rtems/Dockerfile .
 
 cfsbuildenv-doxygen.build:
@@ -155,14 +155,14 @@ cfsbuildenv-el8.build cfsbuildenv-el9.build:
 yocto-sources.build: cfsbuildenv-linux.image
 yocto-sources.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(REPO_TAG) \
 		-f yocto-sources/Dockerfile .
 
 yocto-compile-qemuriscv64.build: yocto-sources.image
 yocto-compile-qemumips.build: yocto-sources.image
 yocto-compile-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-sources:$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-sources:$(REPO_TAG) \
 		--build-arg MACHINE=$(*) \
 		-f yocto-compile/Dockerfile .
 
@@ -170,7 +170,7 @@ yocto-image-qemuriscv64.build: yocto-compile-qemuriscv64.image
 yocto-image-qemumips.build: yocto-compile-qemumips.image
 yocto-image-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-compile-$(*):$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-compile-$(*):$(REPO_TAG) \
 		--build-arg MACHINE=$(*) \
 		-f yocto-image/Dockerfile .
 
@@ -178,26 +178,26 @@ yocto-sdk-qemuriscv64.build: yocto-compile-qemuriscv64.image
 yocto-sdk-qemumips.build: yocto-compile-qemumips.image
 yocto-sdk-%.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-compile-$(*):$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/yocto-compile-$(*):$(REPO_TAG) \
 		--build-arg MACHINE=$(*) \
 		-f yocto-sdk/Dockerfile .
 
 cfsbuildenv-yocto.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg YOCTO_SDK_IMAGE_RISCV=$(TGT_REPO)/yocto-sdk-qemuriscv64:$(LOCAL_TAG) \
-		--build-arg YOCTO_SDK_IMAGE_MIPS=$(TGT_REPO)/yocto-sdk-qemumips:$(LOCAL_TAG) \
+		--build-arg YOCTO_SDK_IMAGE_RISCV=$(TGT_REPO)/yocto-sdk-qemuriscv64:$(REPO_TAG) \
+		--build-arg YOCTO_SDK_IMAGE_MIPS=$(TGT_REPO)/yocto-sdk-qemumips:$(REPO_TAG) \
 		-f cfsbuildenv-yocto/Dockerfile .
 
 cfsbuildenv-arm-linux.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(LOCAL_TAG) \
-		--build-arg SDK_IMAGE=$(TGT_REPO)/arm-linux-sdk:$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(REPO_TAG) \
+		--build-arg SDK_IMAGE=$(TGT_REPO)/arm-linux-sdk:$(REPO_TAG) \
 		-f cfsbuildenv-arm-linux/Dockerfile .
 
 cfsbuildenv-gaisler-sparc-rcc.build:
 	docker build $(EXTRA_BUILDARGS) -t $(QUALIFIED_LOCAL_NAME) \
-		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(LOCAL_TAG) \
-		--build-arg SDK_IMAGE=$(TGT_REPO)/gaisler-sparc-rcc-sdk:$(LOCAL_TAG) \
+		--build-arg BASE_IMAGE=$(TGT_REPO)/cfsbuildenv-linux:$(REPO_TAG) \
+		--build-arg SDK_IMAGE=$(TGT_REPO)/gaisler-sparc-rcc-sdk:$(REPO_TAG) \
 		-f cfsbuildenv-gaisler-sparc-rcc/Dockerfile .
 
 cfsexec-linux.build cfsexec-ubuntu22.build:
@@ -214,7 +214,7 @@ cfsexec-linux.build cfsexec-ubuntu22.build:
 # the idea here is to check if the image was already built, and if so, just
 # use the already-built image from the container repo.  This is done by commit hash.
 %.image:
-	docker pull $(QUALIFIED_LOCAL_NAME) || /bin/true
+	docker pull $(QUALIFIED_REPO_NAME) || /bin/true
 	$(BUILD_DEP_CMD)
 
 # The following is a list of images that rely on a base
@@ -242,7 +242,3 @@ $(DPKG_BUILD_TARGETS): EXTRA_BUILDARGS += --build-arg BASE_IMAGE=debian:bookworm
 
 # These images are intentially using the older ubuntu baseline
 %-ubuntu22.build: EXTRA_BUILDARGS += --build-arg BASE_IMAGE=ubuntu:jammy
-
-# attempt to pull the image before building it here
-.SECONDEXPANSION:
-$(ALL_PUSH_TARGETS): $$(IMAGE_NAME).image

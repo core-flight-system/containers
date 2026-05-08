@@ -8,10 +8,29 @@ on:
 
 env:
   TGT_REPO: ghcr.io/${{ github.repository_owner }}
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
+  check-sha:
+    name: Check commit SHA
+    runs-on: ubuntu-latest
+    outputs:
+      local-tag: ${{ steps.commit.outputs.sha }}
+      dependency-tag: ${{ steps.dep.outputs.sha || 'latest' }}
+    steps:
+      - name: Compute commit short SHA
+        id: commit
+        run: echo "sha=${COMMIT_SHA::7}" >> ${GITHUB_OUTPUT}
+
+      - name: Compute dependency short SHA
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        id: dep
+        run: echo "sha=${{ steps.commit.outputs.sha }}" >> ${GITHUB_OUTPUT}
+
   build-sdk:
-    name: Build SDK Images
+    name: Build SDK Image - ${{ matrix.target-image }}
+    needs: check-sha
+    if: ${{ needs.check-sha.outputs.dependency-tag != 'latest' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,14 +45,20 @@ jobs:
         with:
           target-image: ${{ matrix.target-image }}
           registry-token: ${{ secrets.GITHUB_TOKEN }}
+          local-tag: ${{ needs.check-sha.outputs.local-tag }}
+          dependency-tag: ${{ needs.check-sha.outputs.dependency-tag }}
 
   build-basic:
-    name: Build System/OS Images
-    needs: build-sdk
+    name: Build System/OS Image - ${{ matrix.target-image }}
+    if: ${{ !cancelled() && !failure() }}
+    needs: [ build-sdk, check-sha ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-image: [ cfsexec-qemu, cfsexec-linux, cfsexec-ubuntu22, rtems5-rtos, rtems6-rtos, cfsbuildenv-linux ]
+        target-image: [ cfsexec-qemu, cfsexec-linux, cfsexec-ubuntu22, cfsbuildenv-linux, rtems5-rtos, rtems6-rtos ]
+        exclude:
+          - target-image: ${{ needs.check-sha.outputs.dependency-tag == 'latest' && 'rtems5-rtos' }}
+          - target-image: ${{ needs.check-sha.outputs.dependency-tag == 'latest' && 'rtems6-rtos' }}
 
     steps:
       - name: Checkout code
@@ -44,14 +69,20 @@ jobs:
         with:
           target-image: ${{ matrix.target-image }}
           registry-token: ${{ secrets.GITHUB_TOKEN }}
+          local-tag: ${{ needs.check-sha.outputs.local-tag }}
+          dependency-tag: ${{ needs.check-sha.outputs.dependency-tag }}
 
   build-buildenv:
-    name: CFS Build Environment Images
-    needs: build-basic
+    name: CFS Build Environment Image - ${{ matrix.target-image }}
+    if: ${{ !cancelled() && !failure() }}
+    needs: [ build-basic, check-sha ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-image: [ cfsbuildenv-doxygen, cfsbuildenv-mcdc, cfsbuildenv-rtems5, cfsbuildenv-rtems6, cfsbuildenv-arm-linux, cfsbuildenv-ubuntu22, cfsbuildenv-el9, cfsbuildenv-el8, cfsbuildenv-gaisler-sparc-rcc, cfsbuildenv-yocto ]
+        target-image: [ cfsbuildenv-doxygen, cfsbuildenv-mcdc, cfsbuildenv-ubuntu22,
+                        cfsbuildenv-el9, cfsbuildenv-el8,
+                        cfsbuildenv-rtems5, cfsbuildenv-rtems6,
+                        cfsbuildenv-yocto, cfsbuildenv-gaisler-sparc-rcc, cfsbuildenv-arm-linux ]
 
     steps:
       - name: Checkout code
@@ -62,3 +93,5 @@ jobs:
         with:
           target-image: ${{ matrix.target-image }}
           registry-token: ${{ secrets.GITHUB_TOKEN }}
+          local-tag: ${{ needs.check-sha.outputs.local-tag }}
+          dependency-tag: ${{ needs.check-sha.outputs.dependency-tag }}

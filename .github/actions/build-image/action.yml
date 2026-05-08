@@ -10,6 +10,14 @@ inputs:
     description: Token for logging into container registry
     type: string
     required: true
+  local-tag:
+    description: Tag to use for generated images
+    type: string
+    required: true
+  dependency-tag:
+    description: Tag to use for dependency images while building the current image
+    type: string
+    required: true
 
 runs:
   using: 'composite'
@@ -25,17 +33,29 @@ runs:
     # from latest then docker may figure this out and not rebuild it
     - name: Pull from Latest
       shell: bash
-      run: make REPO_TAG=latest ${{ inputs.target-image }}.pull || /bin/true
+      env:
+        LOCAL_TAG: ${{ inputs.local-tag }}
+        REPO_TAG: 'latest'
+      run: make ${{ inputs.target-image }}.pull || /bin/true
 
     - name: Build Image
       shell: bash
+      env:
+        LOCAL_TAG: ${{ inputs.local-tag }}
+        REPO_TAG: ${{ inputs.dependency-tag }}
       run: make ${{ inputs.target-image }}.image
 
-    - name: Push Image
+    - name: Push Image with local tag
       shell: bash
+      env:
+        LOCAL_TAG: ${{ inputs.local-tag }}
+        REPO_TAG: ${{ inputs.local-tag }}
       run: make ${{ inputs.target-image }}.push
 
     - name: Push as Latest
       if: github.ref == github.event.repository.default_branch
       shell: bash
-      run: make REPO_TAG=latest ${{ inputs.target-image }}.push
+      env:
+        LOCAL_TAG: ${{ inputs.local-tag }}
+        REPO_TAG: 'latest'
+      run: make ${{ inputs.target-image }}.push
