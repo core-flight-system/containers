@@ -53,7 +53,7 @@ runs:
       run: make ${{ inputs.target-image }}.push
 
     - name: Push as Latest
-      if: github.ref == github.event.repository.default_branch
+      if: github.ref_name == github.event.repository.default_branch
       shell: bash
       env:
         LOCAL_TAG: ${{ inputs.local-tag }}
