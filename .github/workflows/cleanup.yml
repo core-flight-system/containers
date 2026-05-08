@@ -1,0 +1,31 @@
+name: Clean up container images
+
+# Run this automatically once a week to keep things tidy
+on:
+  workflow_dispatch:
+  schedule:
+   - cron: "23 6 * * 6"
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    name: Delete expired images
+    steps:
+      - name: Check default branch commit
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/branches/${{ github.event.repository.default_branch }} > ${RUNNER_TEMP}/branch_info.json
+          commit_sha=$(jq -r '.commit.sha' ${RUNNER_TEMP}/branch_info.json)
+          echo keep_sha="${commit_sha::7}" >> ${GITHUB_OUTPUT}
+
+      - uses: snok/container-retention-policy@v3.0.1
+        with:
+          account: core-flight-system
+          token: ${{ secrets.GH_TOKEN }}
+          image-names: "*"
+          image-tags: "!latest !${{ steps.commit.outputs.keep_sha }}"
+          cut-off: 2w
+          dry-run: false
+          keep-n-most-recent: 1
