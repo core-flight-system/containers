@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-image: [ cfsexec-qemu, cfsexec-linux, cfsexec-ubuntu22, rtems5-rtos, rtems6-rtos ]
+        target-image: [ cfsexec-qemu, cfsexec-linux, cfsexec-ubuntu22, rtems5-rtos, rtems6-rtos, cfsbuildenv-linux ]
 
     steps:
       - name: Checkout code
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-image: [ cfsbuildenv-doxygen, cfsbuildenv-linux, cfsbuildenv-mcdc, cfsbuildenv-rtems5, cfsbuildenv-rtems6, cfsbuildenv-arm-linux, cfsbuildenv-ubuntu22, cfsbuildenv-el9, cfsbuildenv-el8, cfsbuildenv-gaisler-sparc-rcc, cfsbuildenv-yocto ]
+        target-image: [ cfsbuildenv-doxygen, cfsbuildenv-mcdc, cfsbuildenv-rtems5, cfsbuildenv-rtems6, cfsbuildenv-arm-linux, cfsbuildenv-ubuntu22, cfsbuildenv-el9, cfsbuildenv-el8, cfsbuildenv-gaisler-sparc-rcc, cfsbuildenv-yocto ]
 
     steps:
       - name: Checkout code
